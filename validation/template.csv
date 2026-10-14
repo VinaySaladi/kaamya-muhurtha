@@ -1,0 +1,3 @@
+case_id,event,venue_city,tradition,pandit_start,pandit_end,p1_role,p1_name,p1_dob,p1_tob,p1_birthplace,p1_nakshatra,p1_rashi,p2_role,p2_name,p2_dob,p2_tob,p2_birthplace,p2_nakshatra,p2_rashi,window_days
+EX-1,griha_pravesh,Hyderabad,telugu,2027-02-19T06:40,2027-02-19T07:50,kartha,Example Owner,1990-06-15,07:30,Hyderabad,,,,,,,,,,60
+EX-2,vivaha,Hyderabad,telugu,2027-02-22T23:58,2027-02-23T01:30,bride,Example Bride,1998-03-14,09:20,Hyderabad,,,groom,Example Groom,,,,Chitra,Tula,60

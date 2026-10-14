@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kaamya Acharya - test screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600&family=Noto+Sans+Telugu&family=Noto+Sans+Devanagari&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#fbf7f1; --card:#ffffff; --ink:#2b2118; --muted:#7a6a5a; --accent:#a3361f; --accent-2:#e9a23b; --line:#eadfce; --me:#fff1dc; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#17120e; --card:#211a14; --ink:#f3e9dc; --muted:#b5a48f; --accent:#e0703f; --accent-2:#e9a23b; --line:#3a2e24; --me:#3a2a18; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Noto Sans","Noto Sans Telugu","Noto Sans Devanagari",system-ui,sans-serif; }
+  header { padding:14px 16px; border-bottom:1px solid var(--line); display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  header b { color:var(--accent); font-size:18px; margin-right:auto; }
+  input, select, button, textarea { font:inherit; border:1px solid var(--line); border-radius:10px; padding:8px 10px; background:var(--card); color:var(--ink); }
+  button { background:var(--accent); color:#fff; border:none; cursor:pointer; }
+  button.ghost { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+  main { max-width:760px; margin:0 auto; padding:16px; }
+  .tabs { display:flex; gap:8px; margin-bottom:12px; }
+  #chat { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; min-height:50vh; max-height:62vh; overflow-y:auto; }
+  .msg { margin:8px 0; padding:10px 12px; border-radius:14px; max-width:85%; white-space:pre-wrap; line-height:1.45; }
+  .ai { background:var(--bg); border:1px solid var(--line); }
+  .me { background:var(--me); margin-left:auto; }
+  .who { font-size:12px; color:var(--muted); margin-bottom:2px; }
+  .hint { font-size:12px; color:var(--muted); margin:6px 2px; }
+  form.send { display:flex; gap:8px; margin-top:10px; }
+  form.send textarea { flex:1; resize:none; height:48px; }
+  .opt { border:1px solid var(--line); border-left:4px solid var(--accent-2); border-radius:12px; padding:10px 12px; margin:8px 0; background:var(--card); }
+  .opt h4 { margin:0 0 4px; }
+  .small { font-size:13px; color:var(--muted); }
+  #review pre { white-space:pre-wrap; font-size:12px; max-height:40vh; overflow:auto; background:var(--bg); padding:8px; border-radius:8px; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<header>
+  <b>🪔 Kaamya Acharya</b>
+  <select id="lang"><option value="en">English</option><option value="te">తెలుగు</option><option value="hi">हिन्दी</option><option value="mr">मराठी</option></select>
+  <input id="key" placeholder="App API key" size="14" type="password">
+  <input id="admin" placeholder="Admin key" size="12" type="password">
+  <button id="start">Start</button>
+</header>
+<main>
+  <div class="tabs"><button class="ghost" data-tab="chatv">Customer chat</button><button class="ghost" data-tab="review">Pandit review</button></div>
+  <section id="chatv">
+    <div id="chat"></div>
+    <div class="hint" id="ui"></div>
+    <form class="send" id="sendf"><textarea id="text" placeholder="Type here..."></textarea><button>Send</button></form>
+    <div id="result"></div>
+  </section>
+  <section id="review" class="hidden">
+    <button id="load">Load pending</button>
+    <div id="queue"></div>
+  </section>
+</main>
+<script>
+let sid = null, rid = null;
+const $ = (id) => document.getElementById(id);
+const H = () => ({ "Content-Type": "application/json", "X-API-Key": $("key").value });
+const A = () => ({ "Content-Type": "application/json", "X-Admin-Key": $("admin").value });
+function add(who, text) {
+  const d = document.createElement("div"); d.className = "msg " + (who === "me" ? "me" : "ai");
+  d.innerHTML = `<div class="who">${who === "me" ? "You" : "Kaamya Acharya"}</div>`;
+  d.appendChild(document.createTextNode(text)); $("chat").appendChild(d); $("chat").scrollTop = 1e9;
+}
+function showUi(r) {
+  const f = r.ui_fields || []; $("ui").textContent = f.length ? "App would show: " + f.map(x => `${x.label} [${x.type}]`).join(" · ") : "";
+  if (r.request_id) { rid = r.request_id; $("result").innerHTML = `<p class="small">Request ${rid} - status ${r.state}. <button class="ghost" onclick="poll()">Check result</button></p>`; }
+}
+$("start").onclick = async () => {
+  $("chat").innerHTML = ""; $("result").innerHTML = "";
+  const r = await fetch("/v1/acharya/sessions", { method: "POST", headers: H(), body: JSON.stringify({ lang: $("lang").value, city: "Hyderabad", customer_ref: "DEMO-" + Date.now() }) }).then(x => x.json());
+  if (!r.session_id) { add("ai", "Error: " + JSON.stringify(r)); return; }
+  sid = r.session_id; add("ai", r.reply); showUi(r);
+};
+$("sendf").onsubmit = async (e) => {
+  e.preventDefault(); const t = $("text").value.trim(); if (!t || !sid) return;
+  add("me", t); $("text").value = "";
+  const r = await fetch(`/v1/acharya/sessions/${sid}/messages`, { method: "POST", headers: H(), body: JSON.stringify({ text: t }) }).then(x => x.json());
+  add("ai", r.reply || ("Error: " + JSON.stringify(r))); showUi(r);
+};
+async function poll() {
+  const r = await fetch(`/v1/requests/${rid}`, { headers: H() }).then(x => x.json());
+  if (!r.result) { $("result").innerHTML = `<p class="small">Status: ${r.app_status}. Waiting for the pandit.</p>`; return; }
+  $("result").innerHTML = "<h3>Your muhurthams (verified)</h3>" + r.result.options.map(o => `
+    <div class="opt"><h4>${o.weekday}, ${o.date} · ${o.start_time} - ${o.end_time}</h4>
+    <div class="small">${o.panchang.masa} · ${o.panchang.paksha} ${o.panchang.tithi} · ${o.panchang.nakshatra} · ${o.panchang.lagna} lagna</div>
+    <p>${o.explanation || ""}</p>${o.pandit_note ? `<p class="small">Pandit: ${o.pandit_note}</p>` : ""}
+    <button>Book pooja on this date</button></div>`).join("") + `<p class="small">${r.result.message_to_family || ""}</p>`;
+}
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+  ["chatv", "review"].forEach(i => $(i).classList.toggle("hidden", i !== b.dataset.tab));
+});
+$("load").onclick = async () => {
+  const q = await fetch("/v1/review/requests", { headers: A() }).then(x => x.json());
+  $("queue").innerHTML = "";
+  for (const item of q.requests || []) {
+    const d = await fetch(`/v1/review/requests/${item.request_id}`, { headers: A() }).then(x => x.json());
+    const div = document.createElement("div"); div.className = "opt";
+    div.innerHTML = `<h4>${item.event} · ${item.request_id}</h4>
+      <p class="small">Note from Acharya: ${d.draft?.note_for_pandit || ""}</p>
+      ${(d.engine.options || []).map(o => `<label><input type="checkbox" checked value="${o.option_id}"> ${o.weekday} ${o.start} - ${o.end.slice(11)} · ${o.quality} (${o.score}) · ${o.panchang.nakshatra}, ${o.panchang.tithi}, ${o.panchang.lagna}</label><br>`).join("")}
+      <details><summary class="small">Birth details & reasons</summary><pre>${JSON.stringify({ people: d.review_input?.people, options: d.engine.options.map(o => ({ id: o.option_id, good: o.why_good, cautions: o.cautions })) }, null, 2)}</pre></details>
+      <input placeholder="Reviewer name" class="rv"> <button class="ap">Approve selected</button> <button class="ghost rj">Reject (manual)</button>`;
+    div.querySelector(".ap").onclick = async () => {
+      const ids = [...div.querySelectorAll("input[type=checkbox]:checked")].map(x => x.value);
+      const r = await fetch(`/v1/review/requests/${item.request_id}/approve`, { method: "POST", headers: A(), body: JSON.stringify({ reviewer: div.querySelector(".rv").value || "Pandit", option_ids: ids }) }).then(x => x.json());
+      div.innerHTML = `<p>${r.status || JSON.stringify(r)}</p>`;
+    };
+    div.querySelector(".rj").onclick = async () => {
+      const r = await fetch(`/v1/review/requests/${item.request_id}/reject`, { method: "POST", headers: A(), body: JSON.stringify({ reviewer: div.querySelector(".rv").value || "Pandit", reason: "Manual review" }) }).then(x => x.json());
+      div.innerHTML = `<p>${r.status || JSON.stringify(r)}</p>`;
+    };
+    $("queue").appendChild(div);
+  }
+  if (!(q.requests || []).length) $("queue").innerHTML = "<p class='small'>Nothing pending.</p>";
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,524 @@
+<title>Kaamya Muhurtham Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tiro+Telugu&family=Tiro+Devanagari+Hindi&family=Noto+Sans:wght@400;500;600&family=Noto+Sans+Telugu:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&display=swap">
+<style>
+  /* Layout: one phone-width column, like the Kaamya app; tabs on top, the active screen below. */
+  :root {
+    --ground: #fdfcfa; --panel: #ffffff; --sunk: #f4f1ec; --ink: #2a1d1a; --muted: #75655f; --line: #e8e0d8;
+    --kumkum: #a8231c; --kumkum-ink: #ffffff; --haldi: #c98a12; --haldi-soft: #fbf1db; --tulsi: #2f7a4b; --tulsi-soft: #e5f2e9;
+    --warn: #9a5b00; --warn-soft: #fdf0dc; --me: #fbe9e2;
+    --f-display: "Tiro Devanagari Hindi", "Tiro Telugu", Georgia, serif;
+    --f-body: "Noto Sans", "Noto Sans Telugu", "Noto Sans Devanagari", system-ui, sans-serif;
+    --r: 14px;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --ground: #171211; --panel: #211a18; --sunk: #2a2220; --ink: #f3e9e4; --muted: #b8a69f; --line: #3a2f2c;
+    --kumkum: #e0584b; --kumkum-ink: #1b0f0d; --haldi: #e6ac3c; --haldi-soft: #3a2c12; --tulsi: #6cc08a; --tulsi-soft: #1d3326;
+    --warn: #f0b45c; --warn-soft: #3b2a12; --me: #3a2421; color-scheme: dark; } }
+  :root[data-theme="dark"] {
+    --ground: #171211; --panel: #211a18; --sunk: #2a2220; --ink: #f3e9e4; --muted: #b8a69f; --line: #3a2f2c;
+    --kumkum: #e0584b; --kumkum-ink: #1b0f0d; --haldi: #e6ac3c; --haldi-soft: #3a2c12; --tulsi: #6cc08a; --tulsi-soft: #1d3326;
+    --warn: #f0b45c; --warn-soft: #3b2a12; --me: #3a2421; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { background: var(--ground); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+  .wrap { max-width: 720px; margin: 0 auto; padding-inline: 16px; padding-block: 12px 40px; }
+  header.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-block: 6px 10px; }
+  .brand { margin-right: auto; min-width: 0; }
+  .brand h1 { font-family: var(--f-display); font-weight: 400; font-size: 26px; margin: 0; color: var(--kumkum); line-height: 1.1; }
+  .brand .today { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  select, input, textarea, button { font: inherit; color: var(--ink); }
+  select, input, textarea { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+  button { cursor: pointer; border-radius: 10px; border: 1px solid transparent; padding: 9px 14px; background: var(--kumkum); color: var(--kumkum-ink); font-weight: 600; }
+  button.quiet { background: transparent; color: var(--kumkum); border-color: var(--line); font-weight: 500; }
+  button:disabled { opacity: .5; cursor: default; }
+  button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--haldi); outline-offset: 2px; }
+  nav.tabs { display: flex; gap: 4px; background: var(--sunk); padding: 4px; border-radius: 12px; overflow-x: auto; }
+  nav.tabs button { flex: 1 0 auto; background: transparent; color: var(--muted); font-weight: 500; padding: 8px 10px; white-space: nowrap; }
+  nav.tabs button[aria-selected="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  nav.tabs .count { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 4px; border-radius: 9px; background: var(--kumkum); color: var(--kumkum-ink); font-size: 11px; line-height: 18px; text-align: center; }
+  section.screen { margin-top: 14px; display: grid; gap: 12px; }
+  .settings { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-size: 13px; color: var(--muted); }
+  .settings label { display: inline-flex; gap: 6px; align-items: center; }
+  #chat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; min-height: 52vh; max-height: 64vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 88%; padding: 10px 13px; border-radius: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .msg.ai { background: var(--sunk); border-top-left-radius: 4px; }
+  .msg.me { background: var(--me); margin-left: auto; border-top-right-radius: 4px; }
+  .msg .who { display: block; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+  .status { font-size: 12.5px; color: var(--muted); display: flex; gap: 8px; align-items: center; min-height: 20px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--haldi); animation: pulse 1s infinite ease-in-out; }
+  @keyframes pulse { 50% { opacity: .3; } }
+  @media (prefers-reduced-motion: reduce) { .dot { animation: none; } }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips button { background: var(--haldi-soft); color: var(--ink); border-color: transparent; font-weight: 500; padding: 6px 11px; font-size: 13.5px; }
+  form.send { display: flex; gap: 8px; }
+  form.send textarea { flex: 1; resize: none; height: 46px; }
+  .note { font-size: 13px; color: var(--muted); }
+  .banner { background: var(--warn-soft); color: var(--warn); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; }
+  /* result cards */
+  .verified { display: grid; gap: 10px; max-width: 100%; }
+  .verified h3 { font-family: var(--f-display); font-weight: 400; font-size: 20px; margin: 0; color: var(--kumkum); }
+  .opt { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; display: grid; gap: 6px; min-width: 0; }
+  .opt .when { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .opt .date { font-weight: 600; font-size: 16px; }
+  .opt .time { font-variant-numeric: tabular-nums; font-size: 15px; }
+  .badge { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+  .badge.uttama { background: var(--tulsi-soft); color: var(--tulsi); }
+  .badge.shubha { background: var(--haldi-soft); color: var(--haldi); }
+  .badge.madhyama, .badge.adhama, .badge.pandit_selected { background: var(--sunk); color: var(--muted); }
+  .strip { font-size: 13px; color: var(--muted); }
+  .opt details summary { cursor: pointer; font-size: 13px; color: var(--kumkum); }
+  .opt ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; }
+  .opt ul.caution li { color: var(--warn); }
+  .opt .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .seal { font-size: 12px; color: var(--tulsi); }
+  /* forms */
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+  .field { display: grid; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
+  .field > * { color: var(--ink); }
+  fieldset { border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px 12px; margin: 0; display: grid; gap: 10px; min-width: 0; }
+  legend { padding: 0 6px; font-weight: 600; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: grid; gap: 10px; min-width: 0; }
+  .card h4 { margin: 0; font-size: 15px; }
+  .table { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  td, th { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; white-space: nowrap; }
+  td { font-variant-numeric: tabular-nums; }
+  .review-opt { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: start; border-top: 1px solid var(--line); padding-top: 10px; }
+  .review-opt textarea { width: 100%; min-height: 60px; }
+  .muted { color: var(--muted); }
+  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--ground); padding: 10px 16px; border-radius: 10px; font-size: 14px; max-width: calc(100% - 32px); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Kaamya Acharya</h1>
+      <div class="today" id="today">Loading today's panchang…</div>
+    </div>
+    <select id="lang" aria-label="Language">
+      <option value="en">English</option><option value="te">తెలుగు</option><option value="hi">हिन्दी</option><option value="mr">मराठी</option>
+    </select>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="chat" aria-selected="true">Acharya chat</button>
+    <button role="tab" data-tab="review" aria-selected="false">Pandit review <span class="count" id="revCount" hidden>0</span></button>
+    <button role="tab" data-tab="form" aria-selected="false">Quick form</button>
+    <button role="tab" data-tab="panchang" aria-selected="false">Panchang</button>
+  </nav>
+
+  <!-- CHAT -->
+  <section class="screen" id="tab-chat">
+    <div class="settings">
+      <label><input type="checkbox" id="reviewMode" checked> Pandit approves before the family sees it (beta)</label>
+      <label>Speed <select id="tier"><option value="quick">Fast</option><option value="default">Thorough</option></select></label>
+      <button class="quiet" id="restart" type="button">New chat</button>
+    </div>
+    <div class="banner" id="noAi" hidden>The Acharya chat needs Claude access in this view. You can still test the engine in <b>Quick form</b> and <b>Panchang</b>.</div>
+    <div id="chat" aria-live="polite"></div>
+    <div class="status" id="status"></div>
+    <div class="chips" id="chips"></div>
+    <form class="send" id="sendForm">
+      <textarea id="text" placeholder="Type your message…" aria-label="Message"></textarea>
+      <button id="sendBtn">Send</button>
+      <button id="stopBtn" class="quiet" type="button" hidden>Stop</button>
+    </form>
+    <p class="note">Birth details stay in this page and are cleared when you start a new chat. Dates and times always come from the panchang engine, never from the AI.</p>
+  </section>
+
+  <!-- REVIEW -->
+  <section class="screen" id="tab-review" hidden>
+    <p class="note">This is the senior pandit's screen. Requests from the chat wait here until approved. Pick the options to send, edit the Acharya's wording if needed, then approve.</p>
+    <div id="reviewList"></div>
+  </section>
+
+  <!-- FORM -->
+  <section class="screen" id="tab-form" hidden>
+    <p class="note">Engine only (no AI): fill the details and see the muhurthams the rules produce.</p>
+    <form id="qForm" class="card">
+      <div class="grid2">
+        <label class="field">Event <select id="fEvent"></select></label>
+        <label class="field">Venue city <input id="fCity" list="cityList" value="Hyderabad"></label>
+        <label class="field">From <input type="date" id="fFrom"></label>
+        <label class="field">To <input type="date" id="fTo"></label>
+        <label class="field">Time of day <select id="fPref"><option value="any">Any</option><option value="morning">Morning</option><option value="afternoon">Afternoon</option><option value="evening">Evening</option><option value="night">Night</option><option value="predawn">Pre-dawn</option></select></label>
+        <label class="field" id="fDirWrap" hidden>Direction of travel <select id="fDir"><option>north</option><option>south</option><option>east</option><option>west</option></select></label>
+      </div>
+      <div id="fPeople" class="grid2" style="grid-template-columns:1fr"></div>
+      <div class="actions"><button id="fRun">Find muhurthams</button> <span class="note" id="fStatus"></span></div>
+    </form>
+    <div id="fOut" class="verified"></div>
+  </section>
+
+  <!-- PANCHANG -->
+  <section class="screen" id="tab-panchang" hidden>
+    <form id="pForm" class="card">
+      <div class="grid2">
+        <label class="field">Date <input type="date" id="pDate"></label>
+        <label class="field">City <input id="pCity" list="cityList" value="Hyderabad"></label>
+      </div>
+      <div><button>Show panchang</button></div>
+    </form>
+    <div id="pOut"></div>
+  </section>
+  <datalist id="cityList"></datalist>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+<script src="engine.js"></script>
+<script>
+(() => {
+  const K = window.KaamyaEngine;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const lang = () => $("lang").value;
+  const todayStr = () => K.todayIn("Asia/Kolkata");
+  let toastTimer;
+  function toast(msg) {
+    let t = document.querySelector(".toast"); if (!t) { t = document.createElement("div"); t.className = "toast"; document.body.append(t); }
+    t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 3200);
+  }
+
+  // ---------------------------------------------------------------- header + tabs
+  function renderToday() {
+    try {
+      const p = K.panchangFor(todayStr(), "Hyderabad", lang());
+      const t = p.tithi[0], n = p.nakshatra[0];
+      $("today").textContent = `${p.samvatsara} · ${p.masa} · ${t.name} · ${n.name} · Hyderabad, today`;
+    } catch (e) { $("today").textContent = ""; }
+  }
+  document.querySelectorAll("nav.tabs button").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
+  function showTab(name) {
+    document.querySelectorAll("nav.tabs button").forEach((x) => x.setAttribute("aria-selected", String(x.dataset.tab === name)));
+    ["chat", "review", "form", "panchang"].forEach((n) => ($("tab-" + n).hidden = n !== name));
+    if (name === "review") renderReview();
+  }
+  $("cityList").innerHTML = ["Hyderabad", "Secunderabad", "Warangal", "Vijayawada", "Visakhapatnam", "Tirupati", "Guntur", "Mumbai", "Thane", "Navi Mumbai", "Pune", "Nagpur", "Nashik", "Bengaluru", "Chennai", "New Delhi", "Dubai", "Singapore", "London", "New Jersey", "Dallas", "San Jose"].map((c) => `<option value="${c}">`).join("");
+
+  // ---------------------------------------------------------------- result cards (engine data, never AI text)
+  const QUALITY = { uttama: "Uttama", shubha: "Shubha", madhyama: "Madhyama", adhama: "Weak", pandit_selected: "Pandit selected" };
+  function optionCard(o, opts = {}) {
+    const p = o.panchang;
+    const el = document.createElement("div"); el.className = "opt";
+    el.innerHTML = `
+      <div class="when"><span class="date">${esc(o.weekday)}, ${esc(fmtDate(o.date))}</span><span class="badge ${esc(o.quality)}">${esc(QUALITY[o.quality] || o.quality)}</span></div>
+      <div class="time">${esc(o.start_time)} – ${esc(o.end_time)} <span class="muted">(${o.duration_minutes} min)</span>${o.hindu_vara && o.hindu_vara !== o.weekday ? ` <span class="muted">· ${esc(o.hindu_vara)} night by the panchang</span>` : ""}</div>
+      <div class="strip">${esc(p.masa)} · ${esc(p.paksha)} ${esc(p.tithi)} · ${esc(p.nakshatra)} · ${esc(p.lagna)} lagna</div>
+      ${o.explanation ? `<div>${esc(o.explanation)}</div>` : ""}
+      ${o.pandit_note ? `<div class="note">Pandit: ${esc(o.pandit_note)}</div>` : ""}
+      <details><summary>Why this time</summary>
+        <ul>${(o.why_good || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+        ${(o.cautions || []).length ? `<ul class="caution">${o.cautions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+        <div class="note">Sunrise ${esc(p.sunrise)} · Sunset ${esc(p.sunset)} · Rahu Kalam ${esc(p.rahu_kalam.join("–"))} · ${esc(p.samvatsara)} samvatsara</div>
+      </details>
+      <div class="actions">${opts.verified ? `<span class="seal">✓ Verified by Kaamya pandit${opts.by ? " (" + esc(opts.by) + ")" : ""}</span>` : ""}
+        <button class="quiet" type="button">Book pooja on this date</button></div>`;
+    el.querySelector(".actions button").addEventListener("click", () => toast(`In the app this opens pooja booking for ${fmtDate(o.date)}, ${o.start_time}.`));
+    return el;
+  }
+  function fmtDate(iso) { const [y, m, d] = iso.split("-").map(Number); return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }); }
+
+  // ---------------------------------------------------------------- state for the chat
+  const GREET = {
+    en: "Namaskaram! I am Kaamya Acharya. For which occasion shall I find a muhurtham for your family?",
+    te: "నమస్కారం! నేను కామ్య ఆచార్యను. మీ కుటుంబంలో ఏ శుభకార్యానికి ముహూర్తం చూడమంటారు?",
+    hi: "नमस्ते! मैं काम्य आचार्य हूँ। आपके परिवार के किस शुभ कार्य के लिए मुहूर्त देखूँ?",
+    mr: "नमस्कार! मी काम्य आचार्य. आपल्या कुटुंबातील कोणत्या शुभकार्यासाठी मुहूर्त पाहू?",
+  };
+  const CHIPS = {
+    en: ["Marriage", "Griha Pravesh", "New vehicle", "Naming ceremony", "Satyanarayana pooja", "Shop opening"],
+    te: ["పెళ్లి", "గృహప్రవేశం", "కొత్త వాహనం", "బారసాల", "సత్యనారాయణ వ్రతం", "షాపు ప్రారంభం"],
+    hi: ["विवाह", "गृह प्रवेश", "नया वाहन", "नामकरण", "सत्यनारायण पूजा", "दुकान उद्घाटन"],
+    mr: ["विवाह", "गृहप्रवेश", "नवीन वाहन", "बारसे", "सत्यनारायण पूजा", "दुकान उद्घाटन"],
+  };
+  const LANG_NAME = { en: "English", te: "Telugu", hi: "Hindi", mr: "Marathi" };
+  let S;
+  function freshState() { return { turns: [], people: [], event: null, lastSearch: null, lastArgs: null, request: null }; }
+  const requests = [];
+
+  function addMsg(who, text) {
+    const d = document.createElement("div"); d.className = "msg " + (who === "me" ? "me" : "ai");
+    d.innerHTML = `<span class="who">${who === "me" ? "You" : "Kaamya Acharya"}</span>`;
+    const body = document.createElement("span"); body.textContent = text; d.append(body);
+    $("chat").append(d); $("chat").scrollTop = $("chat").scrollHeight; return body;
+  }
+  function addBlock(node) { $("chat").append(node); $("chat").scrollTop = $("chat").scrollHeight; }
+  function setStatus(t) { $("status").innerHTML = t ? `<span class="dot"></span><span>${esc(t)}</span>` : ""; }
+  function renderChips() {
+    $("chips").innerHTML = "";
+    if (S.turns.length) return;
+    for (const c of CHIPS[lang()]) { const b = document.createElement("button"); b.type = "button"; b.textContent = c; b.onclick = () => send(c); $("chips").append(b); }
+  }
+  function restart() { S = freshState(); $("chat").innerHTML = ""; addMsg("ai", GREET[lang()]); renderChips(); setStatus(""); }
+
+  // ---------------------------------------------------------------- the Acharya's instructions (sent every call; Claude keeps no memory)
+  function rules() {
+    const review = $("reviewMode").checked;
+    const state = {
+      people_recorded: S.people.map((p) => ({ role: p.role, name: p.name, nakshatra: p.summary?.nakshatra_en, rashi: p.summary?.rashi_en, certain: p.summary?.certain })),
+      event_code: S.event, last_search: S.lastSearch ? { event: S.lastSearch.event.code, options: S.lastSearch.options.length, option_ids: S.lastSearch.options.map((o) => o.option_id) } : null,
+      submitted: S.request ? { request_id: S.request.id, status: S.request.status } : null,
+    };
+    const events = Object.values(K.EVENTS).map((e) => `- ${e.code}: ${e.name}`).join("\n");
+    return `You are Kaamya Acharya, the muhurtha expert inside the Kaamya app (by Vaidikya Technologies, part of The Vaidik Group).
+You speak like a senior, experienced Vaidika pandit who has fixed muhurthams for families in Telangana, Andhra Pradesh and Maharashtra for forty years: warm, patient, respectful, confident, never preachy.
+
+TODAY: ${todayStr()}. App city: Hyderabad.
+LANGUAGE: Reply in ${LANG_NAME[lang()]}. If the family clearly writes in another of English / Telugu / Hindi / Marathi, switch to it. Use natural, respectful language (Telugu "మీరు", "గారు"; Hindi "आप", "जी"; Marathi "आपण"). Panchang terms may stay traditional. Plain text only, no markdown tables.
+
+YOUR JOB
+1. Find out the occasion and map it to an event code below.
+2. Call get_event_requirements and collect only what it needs, one or two questions at a time, never a long form. Say briefly why a detail matters.
+   If birth time is unknown ask for janma nakshatra / rashi; if that is unknown too, continue and say the muhurtham will be general.
+3. As soon as you have a person's details call compute_birth_star (or set_known_star). Tell the family the nakshatra and rashi you got.
+4. With event, date range, venue and the people needed, call find_muhurtham. If no or weak options, explain gently using the reasons it gives and offer to widen the dates or relax the time of day.
+5. Call submit_for_review with the best 2-3 option ids and a 2-4 sentence explanation for each, in the family's language, built only from why_good / cautions. Add a short English note for the pandit.
+6. ${review ? "Then tell the family you found suitable muhurthams and that our senior pandit is verifying them; they will appear in the app shortly. Do NOT mention any date or time." : "The app shows the verified option cards below your message automatically; introduce them warmly in one or two sentences without restating dates or times."}
+
+EVENT CODES
+${events}
+
+RULES
+- Dates and times are hidden from you on purpose; never state or guess any date, time, tithi or nakshatra that a tool did not give you.
+- If asked who you are: Kaamya's muhurtha guide; every muhurtham is verified by Kaamya's senior pandits. Do not claim to be human. Never mention which AI company or model powers you.
+- Stay with muhurtham, panchang and ritual guidance; politely decline anything else. No fear-mongering, no selling remedies.
+- Ask only for what the event needs (no phone, address or ID numbers). Keep replies under 120 words.
+- Convert vague ranges ("after Diwali", "Magha masam") into concrete dates and confirm with the family. Only future dates.
+
+CURRENT STATE (kept by the app): ${JSON.stringify(state)}`;
+  }
+
+  // ---------------------------------------------------------------- page tools Claude may call
+  function redact(res) {
+    return {
+      event: res.event, tradition: res.tradition, personalised: res.personalised, candidate_days: res.candidate_days, people: res.people, rule_notes: res.rule_notes,
+      options: res.options.map((o) => ({ option_id: o.option_id, quality: o.quality, score: o.score, masa: o.panchang.masa, paksha: o.panchang.paksha, tithi: o.panchang.tithi,
+        nakshatra: o.panchang.nakshatra, lagna: o.panchang.lagna, lagna_type: o.panchang.lagna_type, duration_minutes: o.duration_minutes, why_good: o.why_good, cautions: o.cautions })),
+      rejected_reasons_summary: [...new Set(Object.values(res.rejected_days_sample || {}))].slice(0, 6),
+      note: "Dates and times are hidden from you. Explain using why_good / cautions only.",
+    };
+  }
+  function rememberPerson(spec) {
+    const person = K.personFrom(spec);
+    const summary = K.janmaSummary(person, lang());
+    S.people = S.people.filter((p) => p.role !== person.role);
+    S.people.push({ role: person.role, name: person.name, spec, summary });
+    return summary;
+  }
+  const TOOLS = [
+    { name: "get_event_requirements", description: "Details needed to fix a muhurtham for an event, and whose birth stars are checked. Call as soon as you know the event.",
+      inputSchema: { type: "object", properties: { event: { type: "string", description: "Event code or the family's words" } }, required: ["event"] },
+      execute: ({ event }) => { setStatus("Checking what this ceremony needs…"); const r = K.eventRequirements(String(event)); S.event = r.code; return r; } },
+    { name: "compute_birth_star", description: "Compute and remember a person's janma nakshatra, pada and rashi from date, time and place of birth. Returns the result.",
+      inputSchema: { type: "object", properties: { role: { type: "string", description: "kartha | bride | groom | child | father | wife | husband" }, name: { type: "string" },
+        dob: { type: "string", description: "YYYY-MM-DD" }, tob: { type: "string", description: "HH:MM 24h; omit if unknown" }, birthplace: { type: "string", description: "City of birth" },
+        gender: { type: "string", description: "male | female (child events)" } }, required: ["role", "name", "dob", "birthplace"] },
+      execute: (a) => { setStatus("Calculating janma nakshatra…"); const spec = {}; for (const k of ["role", "name", "dob", "tob", "birthplace", "gender"]) if (a[k]) spec[k] = String(a[k]); return rememberPerson(spec); } },
+    { name: "set_known_star", description: "Remember a person's janma nakshatra (and rashi or pada if known) when the birth time is not known.",
+      inputSchema: { type: "object", properties: { role: { type: "string" }, name: { type: "string" }, nakshatra: { type: "string" }, rashi: { type: "string" }, pada: { type: "integer" }, gender: { type: "string" }, dob: { type: "string" } }, required: ["role", "name", "nakshatra"] },
+      execute: (a) => { const spec = {}; for (const k of ["role", "name", "nakshatra", "rashi", "pada", "gender", "dob"]) if (a[k] != null && a[k] !== "") spec[k] = a[k]; return rememberPerson(spec); } },
+    { name: "find_muhurtham", description: "Search the panchang for the best muhurthams using the people already remembered. Returns options with ids, quality and reasons (dates hidden).",
+      inputSchema: { type: "object", properties: { event: { type: "string", enum: Object.keys(K.EVENTS) }, from_date: { type: "string", description: "YYYY-MM-DD" }, to_date: { type: "string", description: "YYYY-MM-DD" },
+        venue: { type: "string", description: "City where the event happens" }, time_pref: { type: "string", enum: ["any", "morning", "afternoon", "evening", "night", "predawn", "daytime"] },
+        weekdays: { type: "array", items: { type: "string" }, description: "Only these weekdays, e.g. ['Saturday','Sunday']" }, avoid_dates: { type: "array", items: { type: "string" } },
+        direction: { type: "string", description: "For travel: north | south | east | west" }, tradition: { type: "string", enum: ["telugu", "marathi", "north"] } }, required: ["event", "from_date", "to_date", "venue"] },
+      execute: async (a) => {
+        setStatus("Reading the panchang for every day in your range…"); await new Promise((r) => setTimeout(r, 30));
+        const args = { ...a, persons: S.people.map((p) => p.spec), lang: lang(), options: 3 };
+        const res = K.findMuhurtham(args); S.event = res.event.code; S.lastSearch = res; S.lastArgs = args; return redact(res);
+      } },
+    { name: "get_panchang", description: "Daily panchang (tithi, nakshatra, yoga, Rahu Kalam, etc.) for a date and city.",
+      inputSchema: { type: "object", properties: { date: { type: "string" }, place: { type: "string" } }, required: ["date", "place"] },
+      execute: ({ date, place }) => { const p = K.panchangFor(String(date), String(place), lang()); return { date: p.date, masa: p.masa, vara: p.vara, sunrise: p.sunrise, sunset: p.sunset, tithi: p.tithi, nakshatra: p.nakshatra, yoga: p.yoga, rahu_kalam: p.rahu_kalam, yamagandam: p.yamagandam, varjyam: p.varjyam }; } },
+    { name: "submit_for_review", description: "Send the chosen options from the latest find_muhurtham result for the senior pandit's verification. Returns the request status.",
+      inputSchema: { type: "object", properties: { option_ids: { type: "array", items: { type: "string" } }, explanations: { type: "object", additionalProperties: { type: "string" }, description: "option_id -> explanation in the family's language" },
+        message_to_family: { type: "string" }, note_for_pandit: { type: "string", description: "English" } }, required: ["option_ids", "explanations", "note_for_pandit"] },
+      execute: (a) => {
+        if (!S.lastSearch || !S.lastSearch.options.length) throw new Error("No search result yet - call find_muhurtham first");
+        if (S.request && ["PENDING_REVIEW", "APPROVED"].includes(S.request.status)) return { request_id: S.request.id, status: S.request.status, note: "Already submitted" };
+        const byId = Object.fromEntries(S.lastSearch.options.map((o) => [o.option_id, o]));
+        const ids = (a.option_ids || []).map(String).filter((i) => byId[i]);
+        if (!ids.length) throw new Error("Unknown option ids - use ids from the latest find_muhurtham result");
+        const req = { id: "mhr_" + Math.random().toString(36).slice(2, 10), created: new Date(), status: "PENDING_REVIEW", lang: lang(), search: S.lastSearch, people: S.people.map((p) => ({ ...p })),
+          draft: { option_ids: ids, explanations: a.explanations || {}, message_to_family: a.message_to_family || "", note_for_pandit: a.note_for_pandit || "" }, state: S };
+        requests.unshift(req); S.request = req; updateRevCount();
+        if (!$("reviewMode").checked) { approve(req, ids, req.draft.explanations, "auto (direct mode)", ""); return { request_id: req.id, status: "APPROVED", note: "Cards are shown to the family by the app." }; }
+        return { request_id: req.id, status: "PENDING_REVIEW" };
+      } },
+  ];
+
+  // ---------------------------------------------------------------- calling Claude
+  let samplePromise = window.claude?.use ? window.claude.use("sample") : Promise.resolve(null);
+  let ctl = null;
+  async function send(text) {
+    text = String(text || "").trim(); if (!text) return;
+    const sample = await samplePromise;
+    if (!sample) { $("noAi").hidden = false; return; }
+    $("chips").innerHTML = ""; addMsg("me", text); $("text").value = "";
+    S.turns.push({ role: "user", content: text });
+    const bubble = addMsg("ai", "…"); setStatus("Acharya is thinking…");
+    $("sendBtn").disabled = true; $("stopBtn").hidden = false; ctl = new AbortController();
+    const state = S;
+    try {
+      const turns = state.turns.slice(-24);
+      const { text: reply, truncated } = await sample([{ role: "user", content: rules() }, ...turns], {
+        tools: TOOLS, modelTier: $("tier").value, signal: ctl.signal,
+        onText: ({ text: t }) => { bubble.textContent = lastRound(t); $("chat").scrollTop = $("chat").scrollHeight; },
+      });
+      if (state !== S) return;
+      const final = lastRound(reply) || reply;
+      bubble.textContent = final + (truncated ? "\n(cut short)" : "");
+      state.turns.push({ role: "assistant", content: final });
+      if (state.request && state.request.status === "APPROVED" && !state.request.shownInChat) showVerifiedInChat(state.request);
+    } catch (e) {
+      if (state !== S) return;
+      const keep = e && e.text ? lastRound(e.text) : "";
+      if (e && e.code === "cancelled") { bubble.textContent = keep || "(stopped)"; }
+      else if (e && ["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "tools_unavailable"].includes(e.code)) { bubble.textContent = keep || "The Acharya is not available in this view."; $("noAi").hidden = false; }
+      else if (e && e.code === "rate_limited") bubble.textContent = keep || "Too many requests just now. Please wait a minute and send again.";
+      else bubble.textContent = keep || "Something interrupted the reply. Please send your message again.";
+      if (keep) state.turns.push({ role: "assistant", content: keep });
+    } finally {
+      if (state === S) { setStatus(""); $("sendBtn").disabled = false; $("stopBtn").hidden = true; }
+    }
+  }
+  function lastRound(t) { return String(t || ""); }
+  $("sendForm").addEventListener("submit", (e) => { e.preventDefault(); send($("text").value); });
+  $("text").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send($("text").value); } });
+  $("stopBtn").addEventListener("click", () => ctl?.abort());
+  $("restart").addEventListener("click", () => { ctl?.abort(); restart(); });
+  $("lang").addEventListener("change", () => { renderToday(); if (!S.turns.length) restart(); });
+
+  // ---------------------------------------------------------------- pandit review
+  function updateRevCount() { const n = requests.filter((r) => r.status === "PENDING_REVIEW").length; $("revCount").textContent = n; $("revCount").hidden = !n; }
+  function approve(req, ids, explanations, reviewer, note) {
+    const byId = Object.fromEntries(req.search.options.map((o) => [o.option_id, o]));
+    req.final = { options: ids.map((i) => ({ ...byId[i], explanation: explanations[i] || "" })), reviewer, note, message: req.draft.message_to_family };
+    req.status = "APPROVED"; req.people = req.people.map((p) => ({ role: p.role, name: p.name })); // birth details erased on approval
+    updateRevCount();
+    if (req.state === S && $("reviewMode").checked) showVerifiedInChat(req, true);
+  }
+  function showVerifiedInChat(req, announce) {
+    if (req.shownInChat) return; req.shownInChat = true;
+    if (announce) {
+      const msg = { en: "Your muhurthams have been verified by our senior pandit.", te: "మీ ముహూర్తాలను మా సీనియర్ పండితులు పరిశీలించి ఆమోదించారు.", hi: "आपके मुहूर्त हमारे वरिष्ठ पंडित जी ने जाँच कर स्वीकृत कर दिए हैं।", mr: "आपले मुहूर्त आमच्या ज्येष्ठ पंडितांनी तपासून मंजूर केले आहेत." }[req.lang] || "";
+      addMsg("ai", msg);
+    }
+    const box = document.createElement("div"); box.className = "verified";
+    box.innerHTML = `<h3>${esc(req.search.event.name)}</h3>`;
+    for (const o of req.final.options) box.append(optionCard(o, { verified: true, by: req.final.reviewer }));
+    if (req.final.message) { const m = document.createElement("p"); m.className = "note"; m.textContent = req.final.message; box.append(m); }
+    addBlock(box);
+  }
+  function renderReview() {
+    const list = $("reviewList"); list.innerHTML = "";
+    if (!requests.length) { list.innerHTML = `<div class="card"><h4>No requests yet</h4><p class="note">Chat with the Acharya with "Pandit approves" switched on. When it has found options, the request appears here.</p></div>`; return; }
+    for (const req of requests) {
+      const c = document.createElement("div"); c.className = "card";
+      const ppl = req.people.map((p) => p.summary ? `${esc(p.name || p.role)} (${esc(p.role)}): ${esc(p.summary.nakshatra_en)} pada ${p.summary.pada}, ${esc(p.summary.rashi_en)} rashi${p.spec?.dob ? ` · born ${esc(p.spec.dob)} ${esc(p.spec.tob || "time unknown")} ${esc(p.spec.birthplace || "")}` : ""}` : `${esc(p.name || p.role)} (${esc(p.role)})`).join("<br>");
+      c.innerHTML = `<h4>${esc(req.search.event.name)} · ${esc(req.search.place.name)} · <span class="muted">${esc(req.status.replace("_", " ").toLowerCase())}</span></h4>
+        <div class="note">${ppl || "No birth details (general muhurtham)"}<br>Window ${esc(req.search.window.from)} to ${esc(req.search.window.to)} · tradition ${esc(req.search.tradition)} · ${req.search.candidate_days} suitable days found</div>
+        ${req.draft.note_for_pandit ? `<div class="banner">Acharya's note: ${esc(req.draft.note_for_pandit)}</div>` : ""}`;
+      if (req.status === "PENDING_REVIEW") {
+        for (const o of req.search.options) {
+          const r = document.createElement("div"); r.className = "review-opt";
+          const checked = req.draft.option_ids.includes(o.option_id) ? "checked" : "";
+          r.innerHTML = `<input type="checkbox" ${checked} aria-label="Include option" data-id="${esc(o.option_id)}">
+            <div style="min-width:0;display:grid;gap:6px"><div><b>${esc(o.weekday)}, ${esc(fmtDate(o.date))} · ${esc(o.start_time)}–${esc(o.end_time)}</b> <span class="badge ${esc(o.quality)}">${esc(QUALITY[o.quality])} ${o.score}</span></div>
+            <div class="strip">${esc(o.panchang.masa)} · ${esc(o.panchang.paksha)} ${esc(o.panchang.tithi)} · ${esc(o.panchang.nakshatra)} · ${esc(o.panchang.lagna)} lagna (${esc(o.panchang.lagna_type)}) · ${esc(o.panchang.yoga)} yoga · ${esc(o.panchang.karana)}</div>
+            <div class="note">${(o.why_good || []).map(esc).join(" · ")}${(o.cautions || []).length ? `<br><span style="color:var(--warn)">${o.cautions.map(esc).join(" · ")}</span>` : ""}</div>
+            <textarea data-exp="${esc(o.option_id)}" aria-label="Explanation for the family">${esc(req.draft.explanations[o.option_id] || "")}</textarea></div>`;
+          c.append(r);
+        }
+        const act = document.createElement("div"); act.className = "actions";
+        act.innerHTML = `<input placeholder="Reviewer name" aria-label="Reviewer name" value="Pandit"> <button type="button">Approve selected</button> <button type="button" class="quiet">Send to manual</button>`;
+        const [nameIn, apBtn, rjBtn] = act.children;
+        apBtn.onclick = () => {
+          const ids = [...c.querySelectorAll("input[type=checkbox]:checked")].map((x) => x.dataset.id);
+          if (!ids.length) { toast("Select at least one option."); return; }
+          const ex = {}; c.querySelectorAll("textarea[data-exp]").forEach((t) => (ex[t.dataset.exp] = t.value.trim()));
+          approve(req, ids, ex, nameIn.value || "Pandit", ""); renderReview(); toast("Approved. The family now sees the verified muhurthams in the chat.");
+        };
+        rjBtn.onclick = () => { req.status = "NEEDS_MANUAL"; updateRevCount(); renderReview(); toast("Sent to the manual Muhurth flow."); };
+        c.append(act);
+      } else if (req.final) {
+        const box = document.createElement("div"); box.className = "verified"; for (const o of req.final.options) box.append(optionCard(o, { verified: true, by: req.final.reviewer })); c.append(box);
+      }
+      list.append(c);
+    }
+  }
+
+  // ---------------------------------------------------------------- quick form (engine only)
+  const ROLE_LABEL = { kartha: "Main person", bride: "Bride", groom: "Groom", child: "Child", father: "Father", wife: "Mother-to-be", husband: "Husband" };
+  const iso = (d) => d.toISOString().slice(0, 10);
+  $("fEvent").innerHTML = Object.values(K.EVENTS).map((e) => `<option value="${e.code}">${esc(e.name)}</option>`).join("");
+  $("fEvent").value = "griha_pravesh";
+  const t0 = new Date(); $("fFrom").value = iso(new Date(t0.getTime() + 7 * 864e5)); $("fTo").value = iso(new Date(t0.getTime() + 120 * 864e5));
+  $("pDate").value = todayStr();
+  const NAK_OPTS = K.L.NAKSHATRA.en.map((n) => `<option>${n}</option>`).join("");
+  function renderPeople() {
+    const ev = K.EVENTS[$("fEvent").value]; $("fDirWrap").hidden = ev.code !== "yatra";
+    const roles = ev.personal_roles;
+    $("fPeople").innerHTML = roles.map((r) => `<fieldset data-role="${r}"><legend>${ROLE_LABEL[r] || r}</legend><div class="grid2">
+      <label class="field">Name <input data-k="name"></label>
+      <label class="field">Date of birth <input type="date" data-k="dob"></label>
+      <label class="field">Time of birth <input type="time" data-k="tob"></label>
+      <label class="field">Birthplace <input data-k="birthplace" list="cityList" value="Hyderabad"></label>
+      <label class="field">Or janma nakshatra <select data-k="nakshatra"><option value="">(use birth details)</option>${NAK_OPTS}</select></label>
+      ${["child"].includes(r) ? `<label class="field">Gender <select data-k="gender"><option value="">-</option><option>male</option><option>female</option></select></label>` : ""}
+      </div><span class="note">Leave blank for a general (not personalised) muhurtham.</span></fieldset>`).join("");
+  }
+  $("fEvent").addEventListener("change", renderPeople); renderPeople();
+  $("qForm").addEventListener("submit", (e) => {
+    e.preventDefault(); $("fStatus").textContent = "Reading the panchang…"; $("fOut").innerHTML = ""; $("fRun").disabled = true;
+    setTimeout(() => {
+      try {
+        const persons = [];
+        $("fPeople").querySelectorAll("fieldset").forEach((fs) => {
+          const g = (k) => fs.querySelector(`[data-k="${k}"]`)?.value.trim() || "";
+          const spec = { role: fs.dataset.role, name: g("name") || ROLE_LABEL[fs.dataset.role] };
+          if (g("nakshatra")) spec.nakshatra = g("nakshatra"); else if (g("dob")) { spec.dob = g("dob"); if (g("tob")) spec.tob = g("tob"); spec.birthplace = g("birthplace") || "Hyderabad"; } else return;
+          if (g("gender")) spec.gender = g("gender"); if (g("dob")) spec.dob = g("dob");
+          persons.push(spec);
+        });
+        const t = performance.now();
+        const res = K.findMuhurtham({ event: $("fEvent").value, from_date: $("fFrom").value, to_date: $("fTo").value, venue: $("fCity").value, time_pref: $("fPref").value, direction: $("fDir").value, persons, lang: lang(), options: 3 });
+        const head = document.createElement("div"); head.className = "note";
+        head.innerHTML = `${res.options.length ? "" : "<b>No suitable time in this range.</b> "}${res.candidate_days} suitable days in ${esc(res.place.name)} (${esc(res.tradition)} tradition) · ${res.personalised ? "personalised" : "general, not personalised"} · ${Math.round(performance.now() - t)} ms`
+          + (res.people.filter((p) => p.available).length ? "<br>" + res.people.filter((p) => p.available).map((p) => `${esc(p.name)}: ${esc(p.nakshatra)} pada ${p.pada}, ${esc(p.rashi)}`).join(" · ") : "")
+          + (!res.options.length && Object.keys(res.rejected_days_sample).length ? "<br>Main reasons: " + [...new Set(Object.values(res.rejected_days_sample))].slice(0, 3).map(esc).join(" · ") : "");
+        $("fOut").append(head); res.options.forEach((o) => $("fOut").append(optionCard(o)));
+        $("fStatus").textContent = "";
+      } catch (err) { $("fStatus").textContent = err.message || String(err); }
+      $("fRun").disabled = false;
+    }, 20);
+  });
+
+  // ---------------------------------------------------------------- panchang view
+  $("pForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    try {
+      const p = K.panchangFor($("pDate").value, $("pCity").value, lang());
+      const spans = (lst) => lst.map((s) => `${esc(s.name)} <span class="muted">until ${esc(s.to.slice(5))}</span>`).join("<br>");
+      const ivs = (lst) => lst.map(([a, b]) => `${esc(a.slice(11))}–${esc(b.slice(11))}`).join(", ") || "—";
+      $("pOut").innerHTML = `<div class="card"><h4>${esc(p.vara)}, ${esc(fmtDate(p.date))} · ${esc(p.place.name)}</h4><div class="table"><table>
+        <tr><th>Samvatsara · masa</th><td>${esc(p.samvatsara)} · ${esc(p.masa)}</td></tr>
+        <tr><th>Sunrise · sunset</th><td>${esc(p.sunrise)} · ${esc(p.sunset)}</td></tr>
+        <tr><th>Tithi</th><td>${spans(p.tithi)}</td></tr><tr><th>Nakshatra</th><td>${spans(p.nakshatra)}</td></tr>
+        <tr><th>Yoga</th><td>${spans(p.yoga)}</td></tr><tr><th>Karana</th><td>${spans(p.karana)}</td></tr>
+        <tr><th>Rahu Kalam</th><td>${esc(p.rahu_kalam.join("–"))}</td></tr><tr><th>Yamagandam</th><td>${esc(p.yamagandam.join("–"))}</td></tr>
+        <tr><th>Gulika</th><td>${esc(p.gulika_kalam.join("–"))}</td></tr><tr><th>Durmuhurtham</th><td>${ivs(p.durmuhurtham)}</td></tr>
+        <tr><th>Varjyam</th><td>${ivs(p.varjyam)}</td></tr><tr><th>Amrita Kalam</th><td>${ivs(p.amrita_kalam)}</td></tr>
+        <tr><th>Abhijit</th><td>${esc(p.abhijit.join("–"))}</td></tr>
+        <tr><th>Moudhyam</th><td>Guru: ${p.guru_moudhyam ? "yes" : "no"} · Shukra: ${p.shukra_moudhyam ? "yes" : "no"}</td></tr></table></div></div>`;
+    } catch (err) { $("pOut").innerHTML = `<div class="banner">${esc(err.message || err)}</div>`; }
+  });
+
+  // ---------------------------------------------------------------- start
+  restart(); renderToday();
+  $("pForm").requestSubmit();
+  samplePromise.then((s) => { if (!s) $("noAi").hidden = false; });
+})();
+</script>

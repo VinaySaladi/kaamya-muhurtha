@@ -1,0 +1,25 @@
+# One-click deploy on Render (render.com): New + > Blueprint > point to this repo.
+services:
+  - type: web
+    name: kaamya-muhurtha
+    runtime: docker
+    plan: starter
+    region: singapore
+    healthCheckPath: /health
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: KAAMYA_API_KEY
+        generateValue: true
+      - key: KAAMYA_ADMIN_KEY
+        generateValue: true
+      - key: KAAMYA_MODEL
+        value: claude-sonnet-5-5
+      - key: KAAMYA_AUTO_APPROVE
+        value: "false"
+      - key: KAAMYA_DB_PATH
+        value: /data/kaamya_muhurtha.db
