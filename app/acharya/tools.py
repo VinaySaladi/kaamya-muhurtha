@@ -75,8 +75,18 @@ TOOLS = [
             "explanations": {"type": "object", "additionalProperties": {"type": "string"},
                              "description": "option_id -> 2-4 sentence explanation in the family's language"},
             "message_to_family": {"type": "string", "description": "Short closing message in the family's language"},
-            "note_for_pandit": {"type": "string", "description": "English: anything the pandit should double-check"}},
+            "note_for_pandit": {"type": "string", "description": "English: anything the pandit should double-check"},
+            "family_request": {"type": "string",
+                               "description": "What the family added or asked when you asked if there was anything else, "
+                                              "in their own words; empty if nothing"}},
             "required": ["option_ids", "explanations", "note_for_pandit"]},
+    },
+    {
+        "name": "add_family_note",
+        "description": "After submit_for_review: pass something the family added (detail, preference or question) "
+                       "to the reviewing pandit, in the family's own words.",
+        "input_schema": {"type": "object", "properties": {
+            "text": {"type": "string", "description": "The family's words"}}, "required": ["text"]},
     },
     {
         "name": "show_inputs",
@@ -128,6 +138,8 @@ def run_tool(name: str, args: dict, session: dict) -> dict:
             return p
         if name == "submit_for_review":
             return _submit(args, session)
+        if name == "add_family_note":
+            return _add_family_note(args, session)
         if name == "show_inputs":
             data["ui_fields"] = args.get("fields", [])
             return {"ok": True}
@@ -136,6 +148,24 @@ def run_tool(name: str, args: dict, session: dict) -> dict:
         return {"error": str(e)}
     except Exception as e:  # never crash the conversation
         return {"error": f"internal error: {type(e).__name__}: {e}"}
+
+
+def _add_family_note(args: dict, session: dict) -> dict:
+    text = (args.get("text") or "").strip()[:1000]
+    if not text:
+        return {"error": "Empty note"}
+    req = store.get_request(session["request_id"]) if session.get("request_id") else None
+    if not req:
+        return {"error": "Nothing submitted yet - include it in family_request when you call submit_for_review"}
+    if req["status"] != "PENDING_REVIEW":
+        return {"error": f"The pandit has already finished ({req['status']}); the family can see the result in the app"}
+    draft = req.get("draft") or {}
+    notes = draft.setdefault("family_notes", [])
+    if len(notes) >= 20:
+        return {"error": "Too many notes already - ask the family to wait for the pandit"}
+    notes.append(text)
+    store.update_request(req["id"], draft=draft)
+    return {"ok": True, "message": "The reviewing pandit will see this note"}
 
 
 def _submit(args: dict, session: dict) -> dict:
@@ -157,6 +187,8 @@ def _submit(args: dict, session: dict) -> dict:
         "message_to_family": args.get("message_to_family", ""),
         "note_for_pandit": args.get("note_for_pandit", ""),
         "explanation_warnings": _check_explanations(args.get("explanations", {}), by_id),
+        # What the family added or asked in their own words (shown to the reviewing pandit)
+        "family_notes": [n for n in [(args.get("family_request") or "").strip()[:1000]] if n],
     }
     review_input = {"people": data.get("people", []), "search_args": data.get("search_args", {})}
     req = store.create_request(session, data.get("event", "general"), session["lang"], res, draft, review_input)
