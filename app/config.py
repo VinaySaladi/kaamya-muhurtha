@@ -18,6 +18,8 @@ class Settings:
     api_key: str = os.getenv("KAAMYA_API_KEY", "")            # app backend -> this service
     admin_key: str = os.getenv("KAAMYA_ADMIN_KEY", "")        # admin console / pandit review
     db_path: str = os.getenv("KAAMYA_DB_PATH", "kaamya_muhurtha.db")
+    # Postgres (e.g. Supabase session pooler URL). When set it replaces SQLite, so data survives restarts.
+    database_url: str = os.getenv("KAAMYA_DATABASE_URL", "").strip()
     auto_approve: bool = _bool("KAAMYA_AUTO_APPROVE", False)  # False = pandit must approve (beta)
     session_ttl_hours: int = int(os.getenv("KAAMYA_SESSION_TTL_HOURS", "48"))
     result_ttl_days: int = int(os.getenv("KAAMYA_RESULT_TTL_DAYS", "30"))

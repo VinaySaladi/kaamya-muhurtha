@@ -23,3 +23,9 @@ services:
         value: "false"
       - key: KAAMYA_DB_PATH
         value: /data/kaamya_muhurtha.db
+      - key: KAAMYA_DATABASE_URL     # optional: Supabase Postgres instead of the SQLite file
+        sync: false
+      - key: KAAMYA_WEBHOOK_URL      # Kaamya Node API: https://<api>/api/v1/webhooks/muhurtha
+        sync: false
+      - key: KAAMYA_WEBHOOK_SECRET   # same value as MUHURTHA_WEBHOOK_SECRET on the Node API
+        sync: false
